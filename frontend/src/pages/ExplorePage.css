@@ -1,0 +1,122 @@
+.explore-page {
+    margin-bottom: 2rem;
+  }
+  
+  .explore-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .explore-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .explore-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+  }
+  
+  .explore-tab {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .explore-tab.active {
+    color: var(--primary-color);
+  }
+  
+  .explore-tab.active::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+  }
+  
+  .users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .user-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .user-card-info h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+  
+  .user-card-info span {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+  
+  .user-bio {
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .user-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .user-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stat-value {
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+  
+  @media (max-width: 768px) {
+    .users-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  

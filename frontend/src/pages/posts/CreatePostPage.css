@@ -1,0 +1,129 @@
+.create-post-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .create-post-container h1 {
+    font-size: 24px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #dbdbdb;
+    padding-bottom: 10px;
+  }
+  
+  .create-post-form {
+    background-color: white;
+    border-radius: 4px;
+  }
+  
+  .form-group {
+    margin-bottom: 25px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .form-group select {
+    background-color: white;
+    height: 45px;
+  }
+  
+  .form-group textarea {
+    resize: vertical;
+    min-height: 150px;
+  }
+  
+  .media-preview {
+    margin-top: 15px;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  
+  .media-preview img,
+  .media-preview video {
+    max-width: 100%;
+    max-height: 400px;
+    display: block;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dbdbdb;
+  }
+  
+  .cancel-button,
+  .submit-button {
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .cancel-button {
+    background-color: white;
+    color: #262626;
+    border: 1px solid #dbdbdb;
+    margin-right: 15px;
+  }
+  
+  .submit-button {
+    background-color: #3897f0;
+    color: white;
+    border: 1px solid #3897f0;
+  }
+  
+  .cancel-button:hover {
+    background-color: #fafafa;
+  }
+  
+  .submit-button:hover {
+    background-color: #1877f2;
+  }
+  
+  .cancel-button:disabled,
+  .submit-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .create-post-container {
+      padding: 15px;
+    }
+  
+    .form-actions {
+      flex-direction: column;
+    }
+  
+    .cancel-button,
+    .submit-button {
+      width: 100%;
+      margin-right: 0;
+      text-align: center;
+    }
+  
+    .cancel-button {
+      margin-bottom: 10px;
+    }
+  }
+  

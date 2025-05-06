@@ -1,0 +1,403 @@
+.learning-plan-form-container,
+.learning-plan-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Create and Edit Learning Plan Form Styles */
+
+.learning-plan-form-container h1,
+.learning-plan-container h1 {
+  font-size: 24px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #dbdbdb;
+  padding-bottom: 10px;
+}
+
+.learning-plan-form {
+  background-color: white;
+  border-radius: 4px;
+}
+
+.form-section {
+  margin-bottom: 30px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  font-size: 18px;
+  margin: 0;
+  color: #262626;
+}
+
+.add-topic-button {
+  padding: 8px 16px;
+  background-color: #3897f0;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.topic-form {
+  background-color: #fafafa;
+  border: 1px solid #efefef;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.topic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.topic-header h3 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.remove-topic-button {
+  padding: 6px 12px;
+  background-color: #ed4956;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dbdbdb;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  margin-right: 10px;
+  width: auto;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #dbdbdb;
+}
+
+.cancel-button,
+.submit-button {
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-button {
+  background-color: white;
+  color: #262626;
+  border: 1px solid #dbdbdb;
+  margin-right: 15px;
+}
+
+.submit-button {
+  background-color: #3897f0;
+  color: white;
+  border: 1px solid #3897f0;
+}
+
+.cancel-button:hover {
+  background-color: #fafafa;
+}
+
+.submit-button:hover {
+  background-color: #1877f2;
+}
+
+.cancel-button:disabled,
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* View Learning Plan Styles */
+
+.learning-plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 25px;
+}
+
+.plan-title-section h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  border: none;
+  padding: 0;
+}
+
+.plan-meta {
+  display: flex;
+  align-items: center;
+  color: #8e8e8e;
+  font-size: 14px;
+}
+
+.plan-creator {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.plan-creator a {
+  display: flex;
+  align-items: center;
+  color: #262626;
+  text-decoration: none;
+}
+
+.creator-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+}
+
+.plan-actions {
+  display: flex;
+}
+
+.edit-plan-button,
+.delete-plan-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-plan-button {
+  background-color: white;
+  color: #262626;
+  border: 1px solid #dbdbdb;
+  margin-right: 10px;
+  text-decoration: none;
+}
+
+.delete-plan-button {
+  background-color: #ed4956;
+  color: white;
+  border: none;
+}
+
+.plan-progress-section {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.progress-header h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.progress-percentage {
+  font-weight: 600;
+  font-size: 18px;
+  color: #3897f0;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: #efefef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #3897f0;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.plan-description,
+.plan-topics {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.plan-description h2,
+.plan-topics h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.plan-description p {
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.no-topics {
+  text-align: center;
+  padding: 20px 0;
+  color: #8e8e8e;
+}
+
+.topic-item {
+  background-color: #fafafa;
+  border: 1px solid #efefef;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 15px;
+}
+
+.topic-item.completed {
+  border-left: 4px solid #3897f0;
+}
+
+.topic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.topic-header h3 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.topic-checkbox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.topic-checkbox input {
+  margin-right: 8px;
+}
+
+.topic-description,
+.topic-resources {
+  margin-bottom: 15px;
+}
+
+.topic-description h4,
+.topic-resources h4 {
+  font-size: 14px;
+  margin-bottom: 5px;
+  color: #8e8e8e;
+}
+
+.topic-description p,
+.topic-resources p {
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 40px 0;
+  color: #8e8e8e;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .learning-plan-form-container,
+  .learning-plan-container {
+    padding: 15px;
+  }
+
+  .learning-plan-header {
+    flex-direction: column;
+  }
+
+  .plan-actions {
+    margin-top: 15px;
+  }
+
+  .topic-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .topic-checkbox {
+    margin-top: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .cancel-button,
+  .submit-button {
+    width: 100%;
+    margin-right: 0;
+    text-align: center;
+  }
+
+  .cancel-button {
+    margin-bottom: 10px;
+  }
+}

@@ -1,0 +1,169 @@
+.follow-page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .follow-header {
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dbdbdb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .follow-header h1 {
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  .follow-navigation {
+    display: flex;
+    align-items: center;
+  }
+  
+  .back-to-profile,
+  .toggle-follow-view {
+    padding: 8px 15px;
+    margin-left: 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  
+  .back-to-profile {
+    background-color: white;
+    color: #262626;
+    border: 1px solid #dbdbdb;
+  }
+  
+  .toggle-follow-view {
+    background-color: #3897f0;
+    color: white;
+    border: 1px solid #3897f0;
+  }
+  
+  .back-to-profile:hover {
+    background-color: #fafafa;
+  }
+  
+  .toggle-follow-view:hover {
+    background-color: #1877f2;
+  }
+  
+  .follow-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .follow-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #efefef;
+  }
+  
+  .follow-user-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .follow-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+  }
+  
+  .follow-user-details {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .follow-username {
+    font-weight: 600;
+    color: #262626;
+    text-decoration: none;
+    margin-bottom: 3px;
+  }
+  
+  .follow-fullname {
+    color: #8e8e8e;
+    font-size: 14px;
+  }
+  
+  .follow-button {
+    padding: 7px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #3897f0;
+    color: white;
+    border: 1px solid #3897f0;
+  }
+  
+  .follow-button.following {
+    background-color: white;
+    color: #262626;
+    border: 1px solid #dbdbdb;
+  }
+  
+  .no-follows {
+    text-align: center;
+    padding: 40px 0;
+    color: #8e8e8e;
+  }
+  
+  .explore-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #3897f0;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .follow-loading,
+  .follow-error {
+    text-align: center;
+    padding: 40px 0;
+    color: #8e8e8e;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .follow-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .follow-navigation {
+      margin-top: 15px;
+    }
+  
+    .back-to-profile,
+    .toggle-follow-view {
+      margin-left: 0;
+      margin-right: 10px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .follow-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .follow-button {
+      margin-top: 10px;
+      margin-left: 60px;
+    }
+  }
+  

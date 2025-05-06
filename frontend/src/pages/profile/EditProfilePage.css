@@ -1,0 +1,142 @@
+.edit-profile-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .edit-profile-container h1 {
+    font-size: 24px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #dbdbdb;
+    padding-bottom: 10px;
+  }
+  
+  .edit-profile-form {
+    background-color: white;
+    border-radius: 4px;
+  }
+  
+  .form-section {
+    margin-bottom: 30px;
+  }
+  
+  .form-section h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #262626;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  .image-preview-container {
+    margin-top: 10px;
+  }
+  
+  .image-preview {
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #dbdbdb;
+    background-color: #fafafa;
+  }
+  
+  .profile-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .cover-preview {
+    width: 100%;
+    max-width: 600px;
+    height: 150px;
+    object-fit: cover;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dbdbdb;
+  }
+  
+  .cancel-button,
+  .save-button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .cancel-button {
+    background-color: white;
+    color: #262626;
+    border: 1px solid #dbdbdb;
+    margin-right: 10px;
+  }
+  
+  .save-button {
+    background-color: #3897f0;
+    color: white;
+    border: 1px solid #3897f0;
+  }
+  
+  .cancel-button:hover {
+    background-color: #fafafa;
+  }
+  
+  .save-button:hover {
+    background-color: #1877f2;
+  }
+  
+  .cancel-button:disabled,
+  .save-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .edit-profile-container {
+      padding: 15px;
+    }
+  
+    .form-actions {
+      flex-direction: column;
+    }
+  
+    .cancel-button,
+    .save-button {
+      width: 100%;
+      margin-right: 0;
+    }
+  
+    .cancel-button {
+      margin-bottom: 10px;
+    }
+  }
+  

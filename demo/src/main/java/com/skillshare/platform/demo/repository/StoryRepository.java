@@ -1,0 +1,24 @@
+package com.skillshare.platform.demo.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.skillshare.platform.demo.model.Story;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Repository
+public interface StoryRepository extends JpaRepository<Story, Long> {
+    
+    List<Story> findByUserIdAndExpiresAtAfterOrderByCreatedAtDesc(Long userId, LocalDateTime now);
+    
+    @Query("SELECT s FROM Story s WHERE s.user.id IN " +
+            "(SELECT f.id FROM User u JOIN u.following f WHERE u.id = :userId) " +
+            "AND s.expiresAt > :now " +
+            "ORDER BY s.createdAt DESC")
+    List<Story> findStoriesFromFollowedUsers(Long userId, LocalDateTime now);
+    
+    List<Story> findByExpiresAtBefore(LocalDateTime now);
+}
