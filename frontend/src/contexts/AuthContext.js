@@ -13,11 +13,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Check if user is authenticated
   const isAuthenticated = !!token
 
   useEffect(() => {
-    // If token exists, load user data
     if (token) {
       loadUser()
     } else {
@@ -25,7 +23,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token])
 
-  // Set token in localStorage and axios headers
   const setAuthToken = (token) => {
     if (token) {
       localStorage.setItem("token", token)
@@ -36,22 +33,13 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Load user data using token
   const loadUser = async () => {
     setLoading(true)
     try {
-      // Set token in axios headers
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`
-
-      // Get current user's username from the token
       const tokenData = parseJwt(token)
-      if (!tokenData || !tokenData.sub) {
-        throw new Error("Invalid token")
-      }
-
+      if (!tokenData || !tokenData.sub) throw new Error("Invalid token")
       const username = tokenData.sub
-
-      // Get user data by username
       const res = await api.get(`/api/users/${username}`)
       setCurrentUser(res.data.data)
       setError(null)
@@ -64,12 +52,10 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Login user
   const login = async (credentials) => {
     try {
       const res = await api.post("/api/auth/login", credentials)
       const { token, user } = res.data.data
-
       setToken(token)
       setAuthToken(token)
       setCurrentUser(user)
@@ -82,12 +68,10 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Register user
   const register = async (userData) => {
     try {
       const res = await api.post("/api/auth/register", userData)
       const { token, user } = res.data.data
-
       setToken(token)
       setAuthToken(token)
       setCurrentUser(user)
@@ -100,14 +84,12 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Logout user
   const logout = () => {
     setToken(null)
     setCurrentUser(null)
     setAuthToken(null)
   }
 
-  // Update user info
   const updateUser = async (userData) => {
     try {
       const res = await api.put(`/api/users/${currentUser.id}`, userData)
@@ -120,7 +102,10 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Parse JWT to get user info
+  const updateCurrentUser = (user) => {
+    setCurrentUser(user)
+  }
+
   const parseJwt = (token) => {
     try {
       if (!token) return null
@@ -148,6 +133,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
+    updateCurrentUser, // ✅ Add this to context
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -33,6 +33,7 @@ public class Notification {
 
     private Long referenceId;
 
+    @Column(name = "is_read")
     private boolean read;
 
     @Column(name = "created_at")

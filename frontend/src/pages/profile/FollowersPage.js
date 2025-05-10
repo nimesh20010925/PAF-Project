@@ -104,7 +104,7 @@ const FollowersPage = () => {
   }
 
   return (
-    <Layout>
+    
       <div className="follow-page-container">
         <div className="follow-header">
           <h1>{user.username}'s Followers</h1>
@@ -153,7 +153,7 @@ const FollowersPage = () => {
           </ul>
         )}
       </div>
-    </Layout>
+    
   )
 }
 

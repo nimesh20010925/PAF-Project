@@ -26,7 +26,8 @@ import FollowersPage from "./pages/profile/FollowersPage"
 import FollowingPage from "./pages/profile/FollowingPage"
 import StoriesPage from "./pages/stories/StoriesPage"
 import CreateStoryPage from "./pages/stories/CreateStoryPage"
-
+import LearningPlanDebugger from "./pages/learning/LearningPlanDebugger"
+import LearningPlansListPage from "./pages/learning/LearningPlansListPage"
 
 function App() {
   const { isAuthenticated, loading } = useAuth()
@@ -43,6 +44,7 @@ function App() {
 
       {/* Protected Routes */}
       <Route path="/" element={<Layout />}>
+        {/* Static Routes */}
         <Route
           index
           element={
@@ -52,7 +54,7 @@ function App() {
           }
         />
 
-        {/* Move this route before the dynamic route to prevent conflicts */}
+        {/* Create Post Route */}
         <Route
           path="posts/create"
           element={
@@ -62,6 +64,7 @@ function App() {
           }
         />
 
+        {/* Post Detail Route */}
         <Route
           path="posts/:id"
           element={
@@ -71,6 +74,7 @@ function App() {
           }
         />
 
+        {/* Profile Routes */}
         <Route
           path="profile/:username"
           element={
@@ -89,6 +93,7 @@ function App() {
           }
         />
 
+        {/* Explore Page */}
         <Route
           path="explore"
           element={
@@ -98,8 +103,18 @@ function App() {
           }
         />
 
+        {/* Learning Plan Routes */}
         <Route
           path="learning-plans"
+          element={
+            <ProtectedRoute>
+              <LearningPlansListPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="learning-plans/:planId"
           element={
             <ProtectedRoute>
               <LearningPlanPage />
@@ -125,6 +140,17 @@ function App() {
           }
         />
 
+        {/* Debug Route */}
+        <Route
+          path="debug"
+          element={
+            <ProtectedRoute>
+              <LearningPlanDebugger />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Notifications Page */}
         <Route
           path="notifications"
           element={
@@ -134,6 +160,7 @@ function App() {
           }
         />
 
+        {/* Followers and Following Pages */}
         <Route
           path="profile/:username/followers"
           element={
@@ -152,6 +179,7 @@ function App() {
           }
         />
 
+        {/* Stories Pages */}
         <Route
           path="stories"
           element={

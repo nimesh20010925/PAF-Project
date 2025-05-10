@@ -38,7 +38,7 @@ public class SecurityConfig {
             .cors().configurationSource(corsConfigurationSource())
             .and()
             .authorizeHttpRequests()
-            .requestMatchers("/api/auth/**", "/error", "/api-docs/**", "/swagger-ui/**").permitAll()
+            .requestMatchers("/api/auth/**", "/error", "/api-docs/**", "/swagger-ui/**", "/uploads/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .sessionManagement()

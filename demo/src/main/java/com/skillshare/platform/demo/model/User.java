@@ -42,6 +42,15 @@ public class User implements UserDetails {
     private String bio;
     private String location;
     private String avatarUrl;
+    private String coverImage;
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
+    }
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

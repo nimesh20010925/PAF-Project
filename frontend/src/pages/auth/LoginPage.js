@@ -13,6 +13,7 @@ const LoginPage = () => {
   const { login } = useAuth()
   const navigate = useNavigate()
 
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
@@ -45,7 +46,7 @@ const LoginPage = () => {
       <div className="auth-card">
         <div className="auth-header">
           <h2>Welcome Back</h2>
-          <p>Sign in to your SkillShare account</p>
+          <p>Sign in to your SkillUp account</p>
         </div>
 
         {error && <div className="auth-error">{error}</div>}
@@ -78,6 +79,20 @@ const LoginPage = () => {
           <button type="submit" className="btn btn-primary w-full" disabled={loading}>
             {loading ? "Signing in..." : "Sign In"}
           </button>
+
+          <button
+  type="button"
+  className="btn btn-google w-full"
+  style={{marginTop:"10px"}}
+  
+>
+<img
+  src="/google.png"
+  alt="Google"
+  style={{ width: "20px", marginRight: "8px" }}
+/>
+  Sign in with Google
+</button>
         </form>
 
         <div className="auth-footer">

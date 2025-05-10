@@ -26,21 +26,31 @@ public class StoryDTO {
     private LocalDateTime expiresAt;
 
     public static StoryDTO fromStory(Story story) {
+        if (story == null) {
+            return null;
+        }
+        
         return StoryDTO.builder()
                 .id(story.getId())
                 .user(UserDTO.fromUser(story.getUser()))
                 .content(story.getContent())
                 .mediaUrl(story.getMediaUrl())
                 .mediaType(story.getMediaType())
-                .viewsCount(story.getViewers().size())
+                .viewsCount(story.getViewers() != null ? story.getViewers().size() : 0)
                 .createdAt(story.getCreatedAt())
                 .expiresAt(story.getExpiresAt())
                 .build();
     }
 
     public static StoryDTO fromStory(Story story, boolean viewed) {
+        if (story == null) {
+            return null;
+        }
+        
         StoryDTO dto = fromStory(story);
-        dto.setViewed(viewed);
+        if (dto != null) {
+            dto.setViewed(viewed);
+        }
         return dto;
     }
 }

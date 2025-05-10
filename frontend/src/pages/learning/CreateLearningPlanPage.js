@@ -2,198 +2,216 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { api } from "../../utils/api"
-import { useAuth } from "../../contexts/AuthContext"
+import { learningPlanAPI } from "../../utils/api" // Updated import
 import { useToast } from "../../contexts/ToastContext"
-import Layout from "../../components/layout/Layout"
 import "./LearningPlanPages.css"
 
 const CreateLearningPlanPage = () => {
-  const { currentUser } = useAuth()
-  const { showToast } = useToast()
   const navigate = useNavigate()
-
-  const [learningPlan, setLearningPlan] = useState({
+  const { showToast } = useToast()
+  const [loading, setLoading] = useState(false)
+  const [formData, setFormData] = useState({
     title: "",
     description: "",
-    topics: [{ title: "", description: "", resources: "", completed: false }],
+    topics: [{ name: "", description: "", resources: [""] }],
   })
-
-  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setLearningPlan((prev) => ({ ...prev, [name]: value }))
+    setFormData({ ...formData, [name]: value })
   }
 
   const handleTopicChange = (index, e) => {
     const { name, value } = e.target
-    const updatedTopics = [...learningPlan.topics]
+    const updatedTopics = [...formData.topics]
     updatedTopics[index] = { ...updatedTopics[index], [name]: value }
-    setLearningPlan((prev) => ({ ...prev, topics: updatedTopics }))
+    setFormData({ ...formData, topics: updatedTopics })
+  }
+
+  const handleResourceChange = (topicIndex, resourceIndex, value) => {
+    const updatedTopics = [...formData.topics]
+    updatedTopics[topicIndex].resources[resourceIndex] = value
+    setFormData({ ...formData, topics: updatedTopics })
   }
 
   const addTopic = () => {
-    setLearningPlan((prev) => ({
-      ...prev,
-      topics: [...prev.topics, { title: "", description: "", resources: "", completed: false }],
-    }))
+    setFormData({
+      ...formData,
+      topics: [...formData.topics, { name: "", description: "", resources: [""] }],
+    })
   }
 
   const removeTopic = (index) => {
-    if (learningPlan.topics.length === 1) {
-      showToast("Learning plan must have at least one topic", "warning")
-      return
-    }
-
-    const updatedTopics = [...learningPlan.topics]
+    const updatedTopics = [...formData.topics]
     updatedTopics.splice(index, 1)
-    setLearningPlan((prev) => ({ ...prev, topics: updatedTopics }))
+    setFormData({ ...formData, topics: updatedTopics })
   }
 
+  const addResource = (topicIndex) => {
+    const updatedTopics = [...formData.topics]
+    updatedTopics[topicIndex].resources.push("")
+    setFormData({ ...formData, topics: updatedTopics })
+  }
+
+  const removeResource = (topicIndex, resourceIndex) => {
+    const updatedTopics = [...formData.topics]
+    updatedTopics[topicIndex].resources.splice(resourceIndex, 1)
+    setFormData({ ...formData, topics: updatedTopics })
+  }
+
+  // Fix the handleSubmit function to properly format the data
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!currentUser) {
-      showToast("Please login to create a learning plan", "error")
-      navigate("/login")
+    // Validate form
+    if (!formData.title.trim()) {
+      showToast("Please enter a title for your learning plan", "error")
       return
     }
 
-    // Validate topics
-    const emptyTopics = learningPlan.topics.some((topic) => !topic.title.trim())
-    if (emptyTopics) {
-      showToast("All topics must have a title", "warning")
+    // Prepare data for backend
+    const validTopics = formData.topics
+      .filter((topic) => topic.name && topic.name.trim() !== "")
+      .map((topic, index) => {
+        // Filter out empty resources
+        const validResources = topic.resources.filter((resource) => resource.trim() !== "")
+
+        return {
+          title: topic.name,
+          description: topic.description || "",
+          resources: validResources.join(","),
+          orderIndex: index,
+          completed: false,
+        }
+      })
+
+    if (validTopics.length === 0) {
+      showToast("Please add at least one topic to your learning plan", "error")
       return
     }
 
-    setLoading(true)
+    const finalFormData = {
+      title: formData.title,
+      description: formData.description || "",
+      topics: validTopics,
+    }
 
     try {
-      // Create learning plan structure for the API
-      const planData = {
-        title: learningPlan.title,
-        description: learningPlan.description,
-        topics: learningPlan.topics.map((topic) => ({
-          title: topic.title,
-          description: topic.description,
-          resources: topic.resources,
-          completed: topic.completed,
-        })),
-      }
-
-      const response = await api.post("/learning-plans", planData)
+      setLoading(true)
+      const response = await learningPlanAPI.createLearningPlan(finalFormData)
       showToast("Learning plan created successfully!", "success")
-      navigate(`/learning-plans/${response.data.id}`)
+      navigate(`/learning-plans/${response.data.data.id}`)
     } catch (error) {
       console.error("Error creating learning plan:", error)
       showToast(error.response?.data?.message || "Failed to create learning plan", "error")
+    } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Layout>
-      <div className="learning-plan-form-container">
-        <h1>Create Learning Plan</h1>
+    <div className="create-learning-plan-container">
+      <h1>Create Learning Plan</h1>
+      <form className="create-learning-plan-form" onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="title">Title</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            placeholder="Enter a title for your learning plan"
+            required
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="learning-plan-form">
-          <div className="form-section">
-            <div className="form-group">
-              <label htmlFor="title">Title</label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={learningPlan.title}
-                onChange={handleChange}
-                placeholder="e.g., Web Development Fundamentals"
-                required
-              />
-            </div>
+        <div className="form-group">
+          <label htmlFor="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Describe what this learning plan is about"
+          />
+        </div>
 
-            <div className="form-group">
-              <label htmlFor="description">Description</label>
-              <textarea
-                id="description"
-                name="description"
-                value={learningPlan.description}
-                onChange={handleChange}
-                placeholder="Describe the purpose and goals of this learning plan"
-                rows="4"
-                required
-              />
-            </div>
-          </div>
+        <div className="topics-section">
+          <h2>Topics</h2>
+          <button type="button" className="add-topic-button" onClick={addTopic}>
+            Add Topic
+          </button>
 
-          <div className="form-section">
-            <div className="section-header">
-              <h2>Topics</h2>
-              <button type="button" onClick={addTopic} className="add-topic-button">
-                Add Topic
-              </button>
-            </div>
-
-            {learningPlan.topics.map((topic, index) => (
-              <div key={index} className="topic-form">
-                <div className="topic-header">
-                  <h3>Topic {index + 1}</h3>
-                  <button type="button" onClick={() => removeTopic(index)} className="remove-topic-button">
+          {formData.topics.map((topic, topicIndex) => (
+            <div key={topicIndex} className="topic-form">
+              <h3>
+                Topic {topicIndex + 1}
+                {formData.topics.length > 1 && (
+                  <button type="button" className="remove-topic-button" onClick={() => removeTopic(topicIndex)}>
                     Remove
                   </button>
-                </div>
+                )}
+              </h3>
 
-                <div className="form-group">
-                  <label htmlFor={`topic-title-${index}`}>Title</label>
-                  <input
-                    type="text"
-                    id={`topic-title-${index}`}
-                    name="title"
-                    value={topic.title}
-                    onChange={(e) => handleTopicChange(index, e)}
-                    placeholder="e.g., HTML Basics"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor={`topic-description-${index}`}>Description</label>
-                  <textarea
-                    id={`topic-description-${index}`}
-                    name="description"
-                    value={topic.description}
-                    onChange={(e) => handleTopicChange(index, e)}
-                    placeholder="Describe what will be learned in this topic"
-                    rows="3"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor={`topic-resources-${index}`}>Resources</label>
-                  <textarea
-                    id={`topic-resources-${index}`}
-                    name="resources"
-                    value={topic.resources}
-                    onChange={(e) => handleTopicChange(index, e)}
-                    placeholder="List books, websites, courses, or other resources"
-                    rows="3"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor={`topic-name-${topicIndex}`}>Topic Title</label>
+                <input
+                  type="text"
+                  id={`topic-name-${topicIndex}`}
+                  name="name"
+                  value={topic.name}
+                  onChange={(e) => handleTopicChange(topicIndex, e)}
+                  placeholder="Enter topic title"
+                  required
+                />
               </div>
-            ))}
-          </div>
 
-          <div className="form-actions">
-            <button type="button" onClick={() => navigate("/")} className="cancel-button" disabled={loading}>
-              Cancel
-            </button>
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? "Creating..." : "Create Learning Plan"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </Layout>
+              <div className="form-group">
+                <label htmlFor={`topic-description-${topicIndex}`}>Topic Description</label>
+                <textarea
+                  id={`topic-description-${topicIndex}`}
+                  name="description"
+                  value={topic.description}
+                  onChange={(e) => handleTopicChange(topicIndex, e)}
+                  placeholder="Describe this topic"
+                />
+              </div>
+
+              <div className="resources-section">
+                <label>Resources</label>
+                {topic.resources.map((resource, resourceIndex) => (
+                  <div key={resourceIndex} className="resource-input">
+                    <input
+                      type="text"
+                      value={resource}
+                      onChange={(e) => handleResourceChange(topicIndex, resourceIndex, e.target.value)}
+                      placeholder="Enter a resource URL or description"
+                    />
+                    {topic.resources.length > 1 && (
+                      <button
+                        type="button"
+                        className="remove-resource-button"
+                        onClick={() => removeResource(topicIndex, resourceIndex)}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button type="button" className="add-resource-button" onClick={() => addResource(topicIndex)}>
+                  Add Resource
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button type="submit" className="submit-button" disabled={loading}>
+          {loading ? "Creating..." : "Create Learning Plan"}
+        </button>
+      </form>
+    </div>
   )
 }
 

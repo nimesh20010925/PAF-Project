@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { format } from "date-fns"
 import { postAPI, commentAPI, likeAPI } from "../../utils/api"
 import { useAuth } from "../../contexts/AuthContext"
 import { useToast } from "../../contexts/ToastContext"
 import MediaDebugger from "../../components/debug/MediaDebugger"
+import MediaLoader from "../media/MediaLoader"
 import "./PostDetailPage.css"
 
-// First, import the placeholder utilities at the top of the file
-import { getPlaceholderImage, handleImageError } from "../../utils/placeholderUtils"
+// Add the import for formatMediaUrl at the top of the file
+import { processMediaItems } from "../../utils/mediaUtils"
 
 const PostDetailPage = () => {
   const { id } = useParams()
@@ -31,32 +32,18 @@ const PostDetailPage = () => {
   const [hasMoreComments, setHasMoreComments] = useState(true)
   const [submittingComment, setSubmittingComment] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
+  // Add state for processed media
+  const [processedMedia, setProcessedMedia] = useState([])
 
-  // Function to fix media URLs by ensuring they have the correct base URL
-  const fixMediaUrls = (mediaItems) => {
+  // Define a memoized function to process media
+  const processMedia = useCallback((mediaItems) => {
     if (!mediaItems || !Array.isArray(mediaItems)) return []
 
-    const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:8080"
-
-    return mediaItems.map((media) => {
-      if (!media) return media
-
-      let url = media.url
-      if (url && !url.startsWith("http")) {
-        // If URL is relative, make it absolute
-        if (url.startsWith("/")) {
-          url = `${baseUrl}${url}`
-        } else {
-          url = `${baseUrl}/${url}`
-        }
-      }
-
-      return {
-        ...media,
-        url: url,
-      }
-    })
-  }
+    console.log("Processing media items:", mediaItems)
+    const processed = processMediaItems(mediaItems)
+    console.log("Processed media items:", processed)
+    return processed
+  }, [])
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -69,16 +56,16 @@ const PostDetailPage = () => {
 
         if (response.data && response.data.data) {
           const postData = response.data.data
-
-          // Fix media URLs if present
-          if (postData.media && Array.isArray(postData.media)) {
-            postData.media = fixMediaUrls(postData.media)
-            console.log("Fixed media URLs:", postData.media)
-          }
+          console.log("Post data:", postData)
 
           setPost(postData)
           setIsLiked(postData.liked)
           setLikesCount(postData.likesCount)
+
+          // Process media if available
+          if (postData.media && Array.isArray(postData.media)) {
+            setProcessedMedia(processMedia(postData.media))
+          }
         } else {
           console.error("Invalid post response format:", response)
           setError("Failed to load post data. Invalid response format.")
@@ -103,7 +90,14 @@ const PostDetailPage = () => {
       fetchPost()
       fetchComments()
     }
-  }, [id])
+  }, [id, processMedia])
+
+  // Update processed media when post media changes
+  useEffect(() => {
+    if (post?.media && Array.isArray(post.media)) {
+      setProcessedMedia(processMedia(post.media))
+    }
+  }, [post?.media, processMedia])
 
   const fetchComments = async () => {
     try {
@@ -146,13 +140,21 @@ const PostDetailPage = () => {
 
     if (!commentText.trim()) return
 
+    if (!currentUser) {
+      showToast("Please log in to comment", "warning")
+      return
+    }
+
     try {
       setSubmittingComment(true)
+      console.log("Submitting comment for post:", id, "with content:", commentText)
       const response = await commentAPI.createComment(id, { content: commentText })
+      console.log("Comment submission response:", response)
 
       if (response.data && response.data.data) {
         setComments((prev) => [response.data.data, ...prev])
         setCommentText("")
+        showToast("Comment posted successfully", "success")
 
         // Update comment count in post
         if (post) {
@@ -161,10 +163,14 @@ const PostDetailPage = () => {
             commentsCount: (prev.commentsCount || 0) + 1,
           }))
         }
+      } else {
+        console.error("Invalid response format:", response)
+        showToast("Error posting comment: Invalid response format", "error")
       }
     } catch (err) {
       console.error("Error creating comment:", err)
-      showToast("Failed to post comment", "error")
+      console.error("Error details:", err.response?.data || err.message)
+      showToast(`Failed to post comment: ${err.response?.data?.message || err.message}`, "error")
     } finally {
       setSubmittingComment(false)
     }
@@ -188,32 +194,24 @@ const PostDetailPage = () => {
     }
   }
 
+  // Render media using the MediaLoader component
   const renderMedia = () => {
-    // Check if media exists and is an array
-    if (!post.media || !Array.isArray(post.media) || post.media.length === 0) {
+    if (!processedMedia || !Array.isArray(processedMedia) || processedMedia.length === 0) {
       return null
     }
 
-    console.log("Rendering media:", post.media)
-
     return (
       <div className="post-detail-media">
-        {post.media.map((media, index) => (
+        {processedMedia.map((media, index) => (
           <div key={index} className="post-media-item">
-            {media.type === "IMAGE" ? (
-              <img
-                src={media.url || getPlaceholderImage(300, 300, "No Image")}
-                alt={`Post media ${index + 1}`}
-                onError={(e) => handleImageError(e, 300, 300, "Image not available")}
-              />
-            ) : media.type === "VIDEO" ? (
-              <video controls>
-                <source src={media.url} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <div className="media-unsupported">Unsupported media type</div>
-            )}
+            <MediaLoader
+              src={media.url}
+              alt={`Post media ${index + 1}`}
+              className="post-detail-image"
+              type={media.type}
+              withFallback={true}
+              style={{ maxWidth: "100%", borderRadius: "8px" }}
+            />
           </div>
         ))}
       </div>
@@ -260,6 +258,24 @@ const PostDetailPage = () => {
     )
   }
 
+  const handleDeletePost = async () => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      try {
+        await postAPI.deletePost(post.id)
+        showToast("Post deleted successfully", "success")
+        navigate("/")
+      } catch (error) {
+        console.error("Error deleting post:", error)
+        showToast("Failed to delete post", "error")
+      }
+    }
+  }
+
+  const toggleComments = () => {
+    // Implement your comment toggle logic here
+    console.log("Comments toggled!")
+  }
+
   return (
     <div className="post-detail-page">
       <div className="post-detail-header">
@@ -288,6 +304,7 @@ const PostDetailPage = () => {
               src={post.user.avatarUrl || "/placeholder.svg?height=50&width=50"}
               alt={post.user.username}
               className="avatar"
+              crossOrigin="anonymous"
             />
             <div className="post-user-info">
               <span className="post-user-name">{post.user.name || post.user.username}</span>
@@ -321,37 +338,57 @@ const PostDetailPage = () => {
         </button>
 
         {/* Media debugger */}
-        {debugMode && <MediaDebugger media={post.media} />}
+        {debugMode && <MediaDebugger media={processedMedia.length > 0 ? processedMedia : post?.media} />}
 
         {/* Regular media display */}
         {renderMedia()}
 
         <div className="post-detail-stats">
-          <button className={`like-button ${isLiked ? "liked" : ""}`} onClick={handleLike}>
-            <i className="material-icons">{isLiked ? "favorite" : "favorite_border"}</i>
-            <span>{likesCount} likes</span>
-          </button>
-          <div className="comments-count">
-            <i className="material-icons">chat_bubble_outline</i>
-            <span>{post.commentsCount || 0} comments</span>
+          <div className="post-actions">
+            <button className={`post-action-btn ${isLiked ? "liked" : ""}`} onClick={handleLike}>
+              <i className="material-icons">{isLiked ? "favorite" : "favorite_border"}</i>
+              <span>{likesCount}</span>
+            </button>
+            <button className="post-action-btn" onClick={toggleComments}>
+              <i className="material-icons">chat_bubble_outline</i>
+              <span>{post.commentsCount || 0}</span>
+            </button>
+            {currentUser && currentUser.id === post.user.id && (
+              <>
+                <Link to={`/posts/${post.id}/edit`} className="post-action-btn">
+                  <i className="material-icons">edit</i>
+                </Link>
+                <button className="post-action-btn delete-btn" onClick={handleDeletePost}>
+                  <i className="material-icons">delete</i>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
         <div className="post-detail-comments">
           <h3>Comments</h3>
 
-          <form onSubmit={handleCommentSubmit} className="comment-form">
-            <input
-              type="text"
-              placeholder="Write a comment..."
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              disabled={submittingComment}
-            />
-            <button type="submit" className="btn btn-primary" disabled={submittingComment || !commentText.trim()}>
-              {submittingComment ? "Posting..." : "Post"}
-            </button>
-          </form>
+          {currentUser ? (
+            <form onSubmit={handleCommentSubmit} className="comment-form">
+              <input
+                type="text"
+                placeholder="Write a comment..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                disabled={submittingComment}
+              />
+              <button type="submit" className="btn btn-primary" disabled={submittingComment || !commentText.trim()}>
+                {submittingComment ? "Posting..." : "Post"}
+              </button>
+            </form>
+          ) : (
+            <div className="login-to-comment">
+              <p>
+                Please <Link to="/login">log in</Link> to comment
+              </p>
+            </div>
+          )}
 
           <div className="comments-list">
             {comments.length > 0 ? (
@@ -362,6 +399,7 @@ const PostDetailPage = () => {
                       src={comment.user.avatarUrl || "/placeholder.svg?height=40&width=40"}
                       alt={comment.user.username}
                       className="avatar"
+                      crossOrigin="anonymous"
                     />
                   </Link>
                   <div className="comment-content">

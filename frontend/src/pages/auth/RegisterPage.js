@@ -78,7 +78,7 @@ const RegisterPage = () => {
       <div className="auth-card">
         <div className="auth-header">
           <h2>Create an Account</h2>
-          <p>Join the SkillShare community</p>
+          <p>Join the SkillSUp community</p>
         </div>
 
         {error && <div className="auth-error">{error}</div>}
@@ -139,6 +139,19 @@ const RegisterPage = () => {
           <button type="submit" className="btn btn-primary w-full" disabled={loading}>
             {loading ? "Creating account..." : "Sign Up"}
           </button>
+          <button
+  type="button"
+  className="btn btn-google w-full"
+  style={{marginTop:"10px"}}
+  
+>
+<img
+  src="/google.png"
+  alt="Google"
+  style={{ width: "20px", marginRight: "8px" }}
+/>
+  Sign Up with Google
+</button>
         </form>
 
         <div className="auth-footer">

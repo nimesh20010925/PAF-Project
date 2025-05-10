@@ -14,6 +14,7 @@ import com.skillshare.platform.demo.model.LearningPlan;
 import com.skillshare.platform.demo.model.LearningPlanTopic;
 import com.skillshare.platform.demo.model.User;
 import com.skillshare.platform.demo.repository.LearningPlanRepository;
+import com.skillshare.platform.demo.repository.LearningPlanTopicRepository;
 import com.skillshare.platform.demo.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class LearningPlanService {
 
     private final LearningPlanRepository learningPlanRepository;
+    private final LearningPlanTopicRepository learningPlanTopicRepository;
     private final UserRepository userRepository;
 
     public List<LearningPlanDTO> getLearningPlansByUserId(Long userId) {
@@ -66,7 +68,12 @@ public class LearningPlanService {
             List<LearningPlanTopic> topics = request.getTopics().stream()
                     .map(topicRequest -> createTopic(savedLearningPlan, topicRequest))
                     .collect(Collectors.toList());
-            savedLearningPlan.setTopics(topics);
+            
+            // Save topics individually
+            topics.forEach(learningPlanTopicRepository::save);
+            
+            // Update progress
+            updateProgress(savedLearningPlan);
         }
 
         return LearningPlanDTO.fromLearningPlan(savedLearningPlan);
@@ -74,36 +81,72 @@ public class LearningPlanService {
 
     @Transactional
     public LearningPlanDTO updateLearningPlan(Long id, LearningPlanRequest request, Long userId) {
-        LearningPlan learningPlan = learningPlanRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Learning plan not found with id: " + id));
+        try {
+            System.out.println("Updating learning plan with ID: " + id);
+            System.out.println("Request data: " + request.toString());
+            
+            // 1. Get the learning plan
+            LearningPlan learningPlan = learningPlanRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Learning plan not found with id: " + id));
 
-        if (!learningPlan.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("You are not authorized to update this learning plan");
+            // 2. Check ownership
+            if (!learningPlan.getUser().getId().equals(userId)) {
+                throw new IllegalArgumentException("You are not authorized to update this learning plan");
+            }
+
+            // 3. Update basic fields
+            learningPlan.setTitle(request.getTitle());
+            learningPlan.setDescription(request.getDescription());
+            learningPlan.setStartDate(request.getStartDate());
+            learningPlan.setEndDate(request.getEndDate());
+            
+            // 4. Save the learning plan with basic updates
+            learningPlan = learningPlanRepository.save(learningPlan);
+            
+            // 5. Delete all existing topics using the repository method
+            System.out.println("Deleting existing topics for learning plan: " + id);
+            learningPlanTopicRepository.deleteByLearningPlanId(id);
+            
+            // 6. Create and save new topics
+            if (request.getTopics() != null && !request.getTopics().isEmpty()) {
+                System.out.println("Creating " + request.getTopics().size() + " new topics");
+                
+                List<LearningPlanTopic> newTopics = new ArrayList<>();
+                for (int i = 0; i < request.getTopics().size(); i++) {
+                    LearningPlanTopicRequest topicRequest = request.getTopics().get(i);
+                    
+                    // Create a new topic
+                    LearningPlanTopic topic = LearningPlanTopic.builder()
+                            .learningPlan(learningPlan)
+                            .name(topicRequest.getTitle() != null ? topicRequest.getTitle() : topicRequest.getName())
+                            .description(topicRequest.getDescription())
+                            .resources(topicRequest.getResources())
+                            .orderIndex(i)
+                            .completed(topicRequest.isCompleted())
+                            .build();
+                    
+                    // Save the topic
+                    LearningPlanTopic savedTopic = learningPlanTopicRepository.save(topic);
+                    newTopics.add(savedTopic);
+                }
+                
+                // 7. Update progress
+                int completedTopics = (int) newTopics.stream().filter(LearningPlanTopic::isCompleted).count();
+                int totalTopics = newTopics.size();
+                int progress = totalTopics > 0 ? (completedTopics * 100) / totalTopics : 0;
+                learningPlan.setProgress(progress);
+                
+                // 8. Save the learning plan with updated progress
+                learningPlan = learningPlanRepository.save(learningPlan);
+            }
+            
+            // 9. Return the updated learning plan
+            return LearningPlanDTO.fromLearningPlan(learningPlan);
+        } catch (Exception e) {
+            System.err.println("Error updating learning plan: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-
-        learningPlan.setTitle(request.getTitle());
-        learningPlan.setDescription(request.getDescription());
-        learningPlan.setStartDate(request.getStartDate());
-        learningPlan.setEndDate(request.getEndDate());
-
-        // Update progress based on completed topics
-        if (request.getTopics() != null && !request.getTopics().isEmpty()) {
-            // Clear existing topics and add new ones
-            learningPlan.getTopics().clear();
-            List<LearningPlanTopic> topics = request.getTopics().stream()
-                    .map(topicRequest -> createTopic(learningPlan, topicRequest))
-                    .collect(Collectors.toList());
-            learningPlan.setTopics(topics);
-
-            // Calculate progress
-            int completedTopics = (int) topics.stream().filter(LearningPlanTopic::isCompleted).count();
-            int totalTopics = topics.size();
-            int progress = totalTopics > 0 ? (completedTopics * 100) / totalTopics : 0;
-            learningPlan.setProgress(progress);
-        }
-
-        LearningPlan updatedLearningPlan = learningPlanRepository.save(learningPlan);
-        return LearningPlanDTO.fromLearningPlan(updatedLearningPlan);
     }
 
     @Transactional
@@ -115,17 +158,47 @@ public class LearningPlanService {
             throw new IllegalArgumentException("You are not authorized to delete this learning plan");
         }
 
+        // Delete all topics first
+        learningPlanTopicRepository.deleteByLearningPlanId(id);
+        
+        // Then delete the learning plan
         learningPlanRepository.delete(learningPlan);
     }
 
     private LearningPlanTopic createTopic(LearningPlan learningPlan, LearningPlanTopicRequest request) {
         return LearningPlanTopic.builder()
                 .learningPlan(learningPlan)
-                .name(request.getName())
+                .name(request.getTitle() != null ? request.getTitle() : request.getName()) // Handle both fields
                 .description(request.getDescription())
                 .resources(request.getResources())
                 .orderIndex(request.getOrderIndex())
                 .completed(request.isCompleted())
                 .build();
+    }
+    
+    private void updateProgress(LearningPlan learningPlan) {
+        int completedTopics = (int) learningPlan.getTopics().stream().filter(LearningPlanTopic::isCompleted).count();
+        int totalTopics = learningPlan.getTopics().size();
+        int progress = totalTopics > 0 ? (completedTopics * 100) / totalTopics : 0;
+        learningPlan.setProgress(progress);
+        learningPlanRepository.save(learningPlan);
+    }
+
+    public List<LearningPlanDTO> getAllLearningPlans() {
+        System.out.println("LearningPlanService.getAllLearningPlans called");
+        try {
+            List<LearningPlan> plans = learningPlanRepository.findAll();
+            System.out.println("Found " + plans.size() + " learning plans in repository");
+        
+            List<LearningPlanDTO> dtos = plans.stream()
+                    .map(LearningPlanDTO::fromLearningPlan)
+                    .collect(Collectors.toList());
+            System.out.println("Converted " + dtos.size() + " plans to DTOs");
+            return dtos;
+        } catch (Exception e) {
+            System.err.println("Error in LearningPlanService.getAllLearningPlans: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 }

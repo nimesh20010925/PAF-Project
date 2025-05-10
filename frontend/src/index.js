@@ -8,6 +8,8 @@ import { ToastProvider } from "./contexts/ToastContext"
 import { BrowserRouter } from "react-router-dom"
 // Add ErrorBoundary import
 import ErrorBoundary from "./components/common/ErrorBoundary"
+import "@fortawesome/fontawesome-free/css/all.min.css"
+
 
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(

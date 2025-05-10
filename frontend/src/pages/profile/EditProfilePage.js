@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { api } from "../../utils/api"
+import { userAPI } from "../../utils/api"
 import { useAuth } from "../../contexts/AuthContext"
 import { useToast } from "../../contexts/ToastContext"
-import Layout from "../../components/layout/Layout"
 import "./EditProfilePage.css"
 
 const EditProfilePage = () => {
-  const { currentUser, updateCurrentUser } = useAuth()
+    const { currentUser, updateCurrentUser } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
 
@@ -28,6 +27,7 @@ const EditProfilePage = () => {
   })
 
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!currentUser) {
@@ -35,10 +35,9 @@ const EditProfilePage = () => {
       return
     }
 
-    // Initialize form with current user data
     setFormData({
       username: currentUser.username || "",
-      fullName: currentUser.fullName || "",
+      fullName: currentUser.name || "",
       email: currentUser.email || "",
       bio: currentUser.bio || "",
       profileImage: null,
@@ -46,7 +45,7 @@ const EditProfilePage = () => {
     })
 
     setPreviewUrls({
-      profileImage: currentUser.profileImage || "",
+      profileImage: currentUser.avatarUrl || "",
       coverImage: currentUser.coverImage || "",
     })
   }, [currentUser, navigate])
@@ -60,8 +59,6 @@ const EditProfilePage = () => {
     const { name, files } = e.target
     if (files.length > 0) {
       setFormData((prev) => ({ ...prev, [name]: files[0] }))
-
-      // Create and set preview URL
       const previewUrl = URL.createObjectURL(files[0])
       setPreviewUrls((prev) => ({ ...prev, [name]: previewUrl }))
     }
@@ -70,12 +67,12 @@ const EditProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
+    setError(null)
 
     try {
-      // Create FormData object for file uploads
       const formDataObj = new FormData()
       formDataObj.append("username", formData.username)
-      formDataObj.append("fullName", formData.fullName)
+      formDataObj.append("name", formData.fullName)
       formDataObj.append("email", formData.email)
       formDataObj.append("bio", formData.bio)
 
@@ -87,110 +84,153 @@ const EditProfilePage = () => {
         formDataObj.append("coverImage", formData.coverImage)
       }
 
-      const response = await api.put(`/users/${currentUser.id}`, formDataObj, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
+      const response = await userAPI.updateUser(currentUser.id, formDataObj)
 
-      // Update user in context
-      updateCurrentUser(response.data)
+      // ✅ Correctly update current user using context method
+      updateCurrentUser(response.data.data)
 
       showToast("Profile updated successfully", "success")
-      navigate(`/profile/${response.data.username}`)
+      navigate(`/profile/${response.data.data.username}`)
     } catch (error) {
       console.error("Error updating profile:", error)
+      setError(error.response?.data?.message || "Failed to update profile")
       showToast(error.response?.data?.message || "Failed to update profile", "error")
     } finally {
       setLoading(false)
     }
   }
 
+  const getImageUrl = (url) => {
+    if (!url) return "/default-avatar.png"
+    if (url.startsWith("http")) return url
+    const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:8080"
+    return `${baseUrl}${url}`
+  }
+
   return (
-    <Layout>
-      <div className="edit-profile-container">
-        <h1>Edit Profile</h1>
+    <div className="edit-profile-container">
+      <h1>Edit Profile</h1>
 
-        <form onSubmit={handleSubmit} className="edit-profile-form">
-          <div className="form-section">
-            <h2>Profile Information</h2>
+      {error && <div className="error-message">{error}</div>}
 
-            <div className="form-group">
-              <label htmlFor="username">Username</label>
+      <form onSubmit={handleSubmit} className="edit-profile-form">
+        <div className="form-section">
+          <h2>Profile Information</h2>
+
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="fullName">Full Name</label>
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="bio">Bio</label>
+            <textarea
+              id="bio"
+              name="bio"
+              value={formData.bio}
+              onChange={handleChange}
+              rows="4"
+            />
+          </div>
+        </div>
+
+        <div className="form-section">
+          <h2>Profile Images</h2>
+
+          <div className="form-group">
+            <label htmlFor="profileImage">Profile Image</label>
+            <div className="image-preview-container">
+              {previewUrls.profileImage && (
+                <img
+                  src={
+                    previewUrls.profileImage.startsWith("blob:")
+                      ? previewUrls.profileImage
+                      : getImageUrl(previewUrls.profileImage)
+                  }
+                  alt="Profile preview"
+                  className="image-preview profile-preview"
+                />
+              )}
               <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
+                type="file"
+                id="profileImage"
+                name="profileImage"
+                onChange={handleFileChange}
+                accept="image/*"
               />
             </div>
-
-            <div className="form-group">
-              <label htmlFor="fullName">Full Name</label>
-              <input type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="bio">Bio</label>
-              <textarea id="bio" name="bio" value={formData.bio} onChange={handleChange} rows="4" />
-            </div>
           </div>
 
-          <div className="form-section">
-            <h2>Profile Images</h2>
-
-            <div className="form-group">
-              <label htmlFor="profileImage">Profile Image</label>
-              <div className="image-preview-container">
-                {previewUrls.profileImage && (
-                  <img
-                    src={previewUrls.profileImage || "/placeholder.svg"}
-                    alt="Profile preview"
-                    className="image-preview profile-preview"
-                  />
-                )}
-                <input type="file" id="profileImage" name="profileImage" onChange={handleFileChange} accept="image/*" />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="coverImage">Cover Image</label>
-              <div className="image-preview-container">
-                {previewUrls.coverImage && (
-                  <img
-                    src={previewUrls.coverImage || "/placeholder.svg"}
-                    alt="Cover preview"
-                    className="image-preview cover-preview"
-                  />
-                )}
-                <input type="file" id="coverImage" name="coverImage" onChange={handleFileChange} accept="image/*" />
-              </div>
+          <div className="form-group">
+            <label htmlFor="coverImage">Cover Image</label>
+            <div className="image-preview-container">
+              {previewUrls.coverImage && (
+                <img
+                  src={
+                    previewUrls.coverImage.startsWith("blob:")
+                      ? previewUrls.coverImage
+                      : getImageUrl(previewUrls.coverImage)
+                  }
+                  alt="Cover preview"
+                  className="image-preview cover-preview"
+                />
+              )}
+              <input
+                type="file"
+                id="coverImage"
+                name="coverImage"
+                onChange={handleFileChange}
+                accept="image/*"
+              />
             </div>
           </div>
+        </div>
 
-          <div className="form-actions">
-            <button
-              type="button"
-              onClick={() => navigate(`/profile/${currentUser.username}`)}
-              className="cancel-button"
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button type="submit" className="save-button" disabled={loading}>
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </Layout>
+        <div className="form-actions">
+          <button
+            type="button"
+            onClick={() => navigate(`/profile/${currentUser.username}`)}
+            className="cancel-button"
+            disabled={loading}
+          >
+            Cancel
+          </button>
+          <button type="submit" className="save-button" disabled={loading}>
+            {loading ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+      </form>
+    </div>
   )
 }
 

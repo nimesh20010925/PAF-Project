@@ -1,0 +1,475 @@
+/* Learning Plans List Page */
+.learning-plans-list-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .learning-plans-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .learning-plans-header h1 {
+    font-size: 28px;
+    margin: 0;
+  }
+  
+  .create-plan-button {
+    background-color: #4a6cf7;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s;
+  }
+  
+  .create-plan-button:hover {
+    background-color: #3a5ce5;
+  }
+  
+  .learning-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .learning-plan-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .learning-plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .learning-plan-card h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 20px;
+    color: #333;
+  }
+  
+  .plan-description {
+    color: #666;
+    margin-bottom: 15px;
+    flex-grow: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .plan-meta {
+    display: flex;
+    justify-content: space-between;
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  
+  .plan-creator {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+  }
+  
+  .creator-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 8px;
+    object-fit: cover;
+  }
+  
+  .no-plans {
+    text-align: center;
+    padding: 40px 0;
+    color: #666;
+  }
+  
+  .no-plans p {
+    margin-bottom: 15px;
+  }
+  
+  .no-plans a {
+    color: #4a6cf7;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .no-plans a:hover {
+    text-decoration: underline;
+  }
+  
+  .loading {
+    text-align: center;
+    padding: 40px 0;
+    color: #666;
+  }
+  
+  /* Learning Plan Page */
+  .learning-plan-container {
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .learning-plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+  }
+  
+  .plan-title-section h1 {
+    font-size: 28px;
+    margin: 0 0 10px 0;
+  }
+  
+  .plan-meta {
+    display: flex;
+    align-items: center;
+    color: #666;
+    font-size: 14px;
+  }
+  
+  .plan-creator {
+    margin-right: 20px;
+  }
+  
+  .plan-creator a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .plan-creator img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 8px;
+    object-fit: cover;
+  }
+  
+  .plan-date {
+    color: #888;
+  }
+  
+  .plan-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .edit-plan-button,
+  .delete-plan-button {
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .edit-plan-button {
+    background-color: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+  }
+  
+  .edit-plan-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .delete-plan-button {
+    background-color: #ff5a5a;
+    color: white;
+    border: none;
+  }
+  
+  .delete-plan-button:hover {
+    background-color: #e04545;
+  }
+  
+  .plan-progress-section {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .progress-header h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+  
+  .progress-percentage {
+    font-size: 18px;
+    font-weight: 600;
+    color: #4a6cf7;
+  }
+  
+  .progress-bar {
+    height: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background-color: #4a6cf7;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+  }
+  
+  .plan-description,
+  .plan-topics {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .plan-description h2,
+  .plan-topics h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 20px;
+  }
+  
+  .topics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .topic-item {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    transition: border-color 0.2s;
+  }
+  
+  .topic-item.completed {
+    border-left: 4px solid #4caf50;
+  }
+  
+  .topic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .topic-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  .topic-checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+  }
+  
+  .topic-checkbox input {
+    margin-right: 8px;
+  }
+  
+  .topic-description,
+  .topic-resources {
+    margin-top: 15px;
+  }
+  
+  .topic-description h4,
+  .topic-resources h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #555;
+  }
+  
+  .topic-description p,
+  .topic-resources p {
+    margin: 0;
+    color: #666;
+  }
+  
+  .no-topics {
+    text-align: center;
+    padding: 20px 0;
+    color: #666;
+  }
+  
+  /* Learning Plan Form */
+  .learning-plan-form-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .learning-plan-form-container h1 {
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  
+  .learning-plan-form {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+  }
+  
+  .form-section {
+    margin-bottom: 30px;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .section-header h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .form-group textarea {
+    resize: vertical;
+  }
+  
+  .add-topic-button {
+    background-color: #4a6cf7;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .add-topic-button:hover {
+    background-color: #3a5ce5;
+  }
+  
+  .topic-form {
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .topic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .topic-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  .remove-topic-button {
+    background-color: #ff5a5a;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .remove-topic-button:hover {
+    background-color: #e04545;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+  }
+  
+  .cancel-button,
+  .submit-button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .cancel-button {
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+  }
+  
+  .cancel-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .submit-button {
+    background-color: #4a6cf7;
+    color: white;
+    border: none;
+  }
+  
+  .submit-button:hover {
+    background-color: #3a5ce5;
+  }
+  
+  .submit-button:disabled {
+    background-color: #a0a0a0;
+    cursor: not-allowed;
+  }
+  

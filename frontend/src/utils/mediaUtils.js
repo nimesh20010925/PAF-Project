@@ -18,18 +18,61 @@ export const getMediaBaseUrl = () => {
   export const formatMediaUrl = (url) => {
     if (!url) return null
   
+    // Log the original URL for debugging
+    console.log("Original URL:", url)
+  
     // If it's already an absolute URL, return it as is
     if (url.startsWith("http://") || url.startsWith("https://")) {
+      console.log("URL is already absolute:", url)
       return url
     }
   
-    // If it's a relative URL, prepend the base URL
-    if (url.startsWith("/")) {
-      return `${getMediaBaseUrl()}${url}`
+    const baseUrl = getMediaBaseUrl()
+    console.log("Base URL:", baseUrl)
+  
+    let formattedUrl
+  
+    // If it's a relative URL starting with /uploads/, just prepend the base URL
+    if (url.startsWith("/uploads/")) {
+      formattedUrl = `${baseUrl}${url}`
+    }
+    // If it's a relative URL starting with uploads/, prepend the base URL and a slash
+    else if (url.startsWith("uploads/")) {
+      formattedUrl = `${baseUrl}/${url}`
+    }
+    // For other filenames, assume they should be in the uploads directory
+    else {
+      formattedUrl = `${baseUrl}/uploads/${url}`
     }
   
-    // Otherwise, prepend the base URL and a slash
-    return `${getMediaBaseUrl()}/${url}`
+    console.log("Formatted URL:", formattedUrl)
+    return formattedUrl
+  }
+  
+  /**
+   * Process an array of media items to ensure all URLs are properly formatted
+   * @param {Array} mediaItems Array of media objects
+   * @returns {Array} Array of media objects with formatted URLs
+   */
+  export const processMediaItems = (mediaItems) => {
+    if (!mediaItems || !Array.isArray(mediaItems)) return []
+  
+    return mediaItems.map((media, index) => {
+      if (!media) return media
+  
+      // Keep the original URL for debugging
+      const originalUrl = media.url
+  
+      // Format the URL
+      const formattedUrl = formatMediaUrl(media.url)
+  
+      return {
+        ...media,
+        originalUrl,
+        url: formattedUrl,
+        index,
+      }
+    })
   }
   
   /**
@@ -66,4 +109,32 @@ export const getMediaBaseUrl = () => {
       lowercaseUrl.endsWith(".mov")
     )
   }
+  
+  /**
+   * Create a direct image URL for testing
+   * This is a fallback method to try different URL formats
+   * @param {string} filename The image filename
+   * @returns {string} A direct URL to the image
+   */
+  export const createDirectImageUrl = (filename) => {
+    if (!filename) return null
+  
+    const baseUrl = getMediaBaseUrl()
+  
+    // Try different path formats
+    const paths = [
+      `${baseUrl}/uploads/${filename}`,
+      `${baseUrl}/uploads/images/${filename}`,
+      `${baseUrl}/images/${filename}`,
+      `${baseUrl}/media/${filename}`,
+      `${baseUrl}/${filename}`,
+      `/uploads/${filename}`, // Relative path
+      `/media/${filename}`, // Relative path
+    ]
+  
+    console.log("Possible image paths:", paths)
+    return paths[0] // Return the first option as default
+  }
+  
+  // Export all utility functions;
   

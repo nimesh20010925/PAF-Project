@@ -2,11 +2,10 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
 import { useAuth } from "../../contexts/AuthContext"
 import { useToast } from "../../contexts/ToastContext"
-import Layout from "../../components/layout/Layout"
 import "./StoryPages.css"
+import { storyAPI } from "../../utils/api"
 
 const CreateStoryPage = () => {
   const { currentUser } = useAuth()
@@ -67,98 +66,93 @@ const CreateStoryPage = () => {
     setLoading(true)
 
     try {
-      // Create a simple FormData object
-      const formData = new FormData()
-      formData.append("title", title)
-      formData.append("content", content)
-      formData.append("media", mediaFile)
+      // Create a story request object with title and content
+      const storyRequest = {
+        title: title,
+        content: content,
+      }
 
-      // Get the token from localStorage
-      const token = localStorage.getItem("token")
+      console.log("Submitting story with data:", storyRequest)
+      console.log("Media file:", mediaFile.name, mediaFile.type, mediaFile.size)
 
-      // Get the base URL from environment variables
-      const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:8080"
-      console.log("Using API URL:", baseUrl)
-
-      // Make a direct axios call to the backend
-      const response = await axios.post(`${baseUrl}/api/stories/upload`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      })
+      // Use the storyAPI from api.js
+      const response = await storyAPI.createStory(storyRequest, mediaFile)
 
       console.log("Story created successfully:", response.data)
       showToast("Story created successfully!", "success")
       navigate("/stories")
     } catch (error) {
       console.error("Error creating story:", error)
+
+      // Extract the error message from the response if available
+      const errorMessage = error.response?.data?.message || "Failed to create story. Please try again later."
+
       console.error("Error details:", error.response?.data || "No response data")
-      showToast(error.response?.data?.message || "Failed to create story. Check console for details.", "error")
+
+      // Show a more user-friendly error message
+      showToast(errorMessage, "error")
     } finally {
       setLoading(false)
     }
   }
 
-return (
-    <Layout>
-        <div className="create-story-container">
-            <h1>Create a New Story</h1>
+  return (
+    <div className="create-story-container">
+      <h1>Create a New Story</h1>
 
-            <form onSubmit={handleSubmit} className="create-story-form">
-                <div className="form-group">
-                    <label htmlFor="title">Title (Optional)</label>
-                    <input
-                        type="text"
-                        id="title"
-                        value={title}
-                        onChange={handleTitleChange}
-                        placeholder="Give your story a title"
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="content">Content (Optional)</label>
-                    <textarea
-                        id="content"
-                        value={content}
-                        onChange={handleContentChange}
-                        placeholder="Add a description or content for your story"
-                        rows="3"
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="media">Upload Media (Required)</label>
-                    <input type="file" id="media" onChange={handleFileChange} accept="image/*,video/*" required />
-
-                    {mediaPreview && (
-                        <div className="media-preview">
-                            {mediaFile?.type.startsWith("image/") ? (
-                                <img
-                                    src={mediaPreview || "/placeholder.svg"}
-                                    alt="Story preview"
-                                    style={{ maxWidth: "100%", maxHeight: "300px" }}
-                                />
-                            ) : mediaFile?.type.startsWith("video/") ? (
-                                <video controls src={mediaPreview} style={{ maxWidth: "100%", maxHeight: "300px" }} />
-                            ) : null}
-                        </div>
-                    )}
-                </div>
-
-                <div className="form-actions">
-                    <button type="button" onClick={() => navigate("/stories")} className="cancel-button" disabled={loading}>
-                        Cancel
-                    </button>
-                    <button type="submit" className="submit-button" disabled={loading}>
-                        {loading ? "Creating Story..." : "Create Story"}
-                    </button>
-                </div>
-            </form>
+      <form onSubmit={handleSubmit} className="create-story-form">
+        <div className="form-group">
+          <label htmlFor="title">Title (Optional)</label>
+          <input
+            type="text"
+            id="title"
+            value={title}
+            onChange={handleTitleChange}
+            placeholder="Give your story a title"
+          />
         </div>
-    </Layout>
-)
+
+        <div className="form-group">
+          <label htmlFor="content">Content (Optional)</label>
+          <textarea
+            id="content"
+            value={content}
+            onChange={handleContentChange}
+            placeholder="Add a description or content for your story"
+            rows="3"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="media">Upload Media (Required)</label>
+          <input type="file" id="media" onChange={handleFileChange} accept="image/*,video/*" required />
+
+          {mediaPreview && (
+            <div className="media-preview">
+              {mediaFile?.type.startsWith("image/") ? (
+                <img
+                  src={mediaPreview || "/placeholder.svg"}
+                  alt="Story preview"
+                  style={{ maxWidth: "100%", maxHeight: "300px" }}
+                />
+              ) : mediaFile?.type.startsWith("video/") ? (
+                <video controls src={mediaPreview} style={{ maxWidth: "100%", maxHeight: "300px" }} />
+              ) : null}
+            </div>
+          )}
+        </div>
+
+        <div className="form-actions">
+          <button type="button" onClick={() => navigate("/stories")} className="cancel-button" disabled={loading}>
+            Cancel
+          </button>
+          <button type="submit" className="submit-button" disabled={loading}>
+            {loading ? "Creating Story..." : "Create Story"}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
 }
 
 export default CreateStoryPage

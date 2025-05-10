@@ -2,11 +2,11 @@ package com.skillshare.platform.demo.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.skillshare.platform.demo.dto.CommentDTO;
@@ -18,6 +18,7 @@ import com.skillshare.platform.demo.service.CommentService;
 @RestController
 @RequestMapping("/api/posts/{postId}/comments")
 @RequiredArgsConstructor
+@Slf4j
 public class CommentController {
     private final CommentService commentService;
 
@@ -34,12 +35,20 @@ public class CommentController {
             @PathVariable Long postId,
             @Valid @RequestBody CommentRequest commentRequest,
             @CurrentUser Long currentUserId) {
-        CommentDTO createdComment = commentService.createComment(postId, commentRequest, currentUserId);
-        return ResponseEntity.ok(ApiResponse.success("Comment created successfully", createdComment));
+        log.info("Received request to create comment for post {} by user {}", postId, currentUserId);
+        log.info("Comment content: {}", commentRequest.getContent());
+        
+        try {
+            CommentDTO createdComment = commentService.createComment(postId, commentRequest, currentUserId);
+            log.info("Comment created successfully with id: {}", createdComment.getId());
+            return ResponseEntity.ok(ApiResponse.success("Comment created successfully", createdComment));
+        } catch (Exception e) {
+            log.error("Error creating comment: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("@commentService.getCommentById(#id).user.id == authentication.principal.id")
     public ResponseEntity<ApiResponse<CommentDTO>> updateComment(
             @PathVariable Long postId,
             @PathVariable Long id,
@@ -57,5 +66,4 @@ public class CommentController {
         commentService.deleteComment(id, currentUserId);
         return ResponseEntity.ok(ApiResponse.success("Comment deleted successfully", null));
     }
-
 }

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StoryRequest {
-    private String title;
+    
     private String content;
+    private String mediaUrl;
 }

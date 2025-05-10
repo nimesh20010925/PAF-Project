@@ -91,26 +91,26 @@ const FollowingPage = () => {
 
   if (loading) {
     return (
-      <Layout>
+      
         <div className="follow-page-container">
           <div className="follow-loading">Loading following...</div>
         </div>
-      </Layout>
+      
     )
   }
 
   if (!user) {
     return (
-      <Layout>
+      
         <div className="follow-page-container">
           <div className="follow-error">User not found</div>
         </div>
-      </Layout>
+      
     )
   }
 
   return (
-    <Layout>
+    
       <div className="follow-page-container">
         <div className="follow-header">
           <h1>People {user.username} Follows</h1>
@@ -164,7 +164,7 @@ const FollowingPage = () => {
           </ul>
         )}
       </div>
-    </Layout>
+   
   )
 }
 

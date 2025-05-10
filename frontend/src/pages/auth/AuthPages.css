@@ -6,7 +6,15 @@
   padding: 2rem 1rem;
   background-color: #f5f7fb;
 }
-
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 2rem 1rem;
+  background: url("../../../public/login-bg.jpg") no-repeat center center;
+  background-size: cover;
+}
 .auth-card {
   background-color: white;
   border-radius: 8px;

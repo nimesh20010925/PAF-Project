@@ -1,195 +1,192 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, Link } from "react-router-dom"
-import { api } from "../../utils/api"
+import { useParams, Link, useNavigate } from "react-router-dom"
+import { userAPI, postAPI } from "../../utils/api"
 import { useAuth } from "../../contexts/AuthContext"
 import { useToast } from "../../contexts/ToastContext"
-import Layout from "../../components/layout/Layout"
 import PostItem from "../../components/posts/PostItem"
+import Loading from "../../components/common/Loading"
 import "./ProfilePage.css"
 
 const ProfilePage = () => {
   const { username } = useParams()
   const { currentUser } = useAuth()
-  const { showToast } = useToast()
-  const [profileUser, setProfileUser] = useState(null)
+  const { addToast } = useToast()
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [followLoading, setFollowLoading] = useState(false)
+  const [error, setError] = useState(null)
   const [isFollowing, setIsFollowing] = useState(false)
-  const [stats, setStats] = useState({ posts: 0, followers: 0, following: 0 })
-
-  const fetchUserProfile = async () => {
-    try {
-      setLoading(true)
-      const userResponse = await api.get(`/api/users/${username}`)
-
-      if (!userResponse.data || !userResponse.data.data) {
-        throw new Error("Invalid user data received")
-      }
-
-      setProfileUser(userResponse.data.data)
-
-      // Check if current user is following this profile
-      if (currentUser && currentUser.id !== userResponse.data.data.id) {
-        try {
-          const followingResponse = await api.get(`/api/users/${currentUser.id}/following`)
-          const isFollowing = followingResponse.data.data.some((user) => user.id === userResponse.data.data.id)
-          setIsFollowing(isFollowing)
-        } catch (error) {
-          console.error("Error checking follow status:", error)
-        }
-      }
-
-      // Get user stats
-      try {
-        const postsResponse = await api.get(`/api/posts/user/${userResponse.data.data.id}`)
-        const followersCount = userResponse.data.data.followersCount || 0
-        const followingCount = userResponse.data.data.followingCount || 0
-        const postsCount = postsResponse.data.data.totalElements || 0
-
-        setStats({
-          posts: postsCount,
-          followers: followersCount,
-          following: followingCount,
-        })
-
-        // Set posts
-        setPosts(postsResponse.data.data.content || [])
-      } catch (error) {
-        console.error("Error fetching user stats:", error)
-      }
-
-      setLoading(false)
-    } catch (error) {
-      console.error("Error fetching profile:", error)
-      showToast("Failed to load profile", "error")
-      setLoading(false)
-    }
-  }
 
   useEffect(() => {
-    fetchUserProfile()
-  }, [username, currentUser, showToast])
+    const fetchUserData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        console.log(`Fetching user data for username: ${username}`)
+        const response = await userAPI.getUserByUsername(username)
+        console.log("User data response:", response)
+
+        if (!response.data || !response.data.data) {
+          console.error("Invalid user data response:", response)
+          setError("Failed to load user profile: Invalid response format")
+          setLoading(false)
+          return
+        }
+
+        const userData = response.data.data
+        setUser(userData)
+        setIsFollowing(userData.isFollowing)
+
+        // Fetch user's posts
+        console.log(`Fetching posts for user ID: ${userData.id}`)
+        const postsResponse = await postAPI.getPostsByUserId(userData.id)
+        console.log("Posts response:", postsResponse)
+
+        if (postsResponse.data && postsResponse.data.data) {
+          setPosts(postsResponse.data.data.content || [])
+        } else {
+          console.error("Invalid posts response:", postsResponse)
+          setPosts([])
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+        setError("Failed to load user profile: " + (error.response?.data?.message || error.message))
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (username) {
+      fetchUserData()
+    }
+  }, [username])
 
   const handleFollow = async () => {
     if (!currentUser) {
-      showToast("Please login to follow users", "warning")
+      addToast("You must be logged in to follow users", "error")
+      navigate("/login")
       return
     }
 
+    if (followLoading) return
+
     try {
+      setFollowLoading(true)
+      console.log(`${isFollowing ? "Unfollowing" : "Following"} user with ID: ${user.id}`)
+
       if (isFollowing) {
-        await api.post(`/users/${currentUser.id}/unfollow/${profileUser.id}`)
-        setIsFollowing(false)
-        setStats((prev) => ({ ...prev, followers: prev.followers - 1 }))
-        showToast(`Unfollowed ${profileUser.username}`, "info")
+        const response = await userAPI.unfollowUser(user.id)
+        console.log("Unfollow response:", response)
+        addToast(`You have unfollowed ${user.name || user.username}`, "success")
       } else {
-        await api.post(`/users/${currentUser.id}/follow/${profileUser.id}`)
-        setIsFollowing(true)
-        setStats((prev) => ({ ...prev, followers: prev.followers + 1 }))
-        showToast(`Following ${profileUser.username}`, "success")
+        const response = await userAPI.followUser(user.id)
+        console.log("Follow response:", response)
+        addToast(`You are now following ${user.name || user.username}`, "success")
       }
+
+      setIsFollowing(!isFollowing)
+      setUser((prevUser) => ({
+        ...prevUser,
+        followersCount: isFollowing ? prevUser.followersCount - 1 : prevUser.followersCount + 1,
+      }))
     } catch (error) {
-      console.error("Error following/unfollowing user:", error)
-      showToast("Failed to update follow status", "error")
+      console.error(`Error ${isFollowing ? "unfollowing" : "following"} user:`, error)
+      const errorMessage = error.response?.data?.message || error.message || "An unexpected error occurred"
+      addToast(`Failed to ${isFollowing ? "unfollow" : "follow"} user: ${errorMessage}`, "error")
+    } finally {
+      setFollowLoading(false)
     }
   }
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="profile-page-container">
-          <div className="profile-loading">Loading profile...</div>
-        </div>
-      </Layout>
-    )
+  const getImageUrl = (url) => {
+    if (!url) return "/default-avatar.png" // Use default avatar
+    if (url.startsWith("http")) return url
+    const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:8080"
+    return `${baseUrl}${url}`
   }
 
-  if (!profileUser) {
+  if (loading) return <Loading />
+
+  if (error)
     return (
-      <Layout>
-        <div className="profile-page-container">
-          <div className="profile-error">User not found</div>
-        </div>
-      </Layout>
+      <div className="error-container">
+        <div className="error-message">{error}</div>
+        <button className="back-button" onClick={() => navigate(-1)}>
+          Go Back
+        </button>
+      </div>
     )
-  }
+
+  if (!user)
+    return (
+      <div className="not-found-container">
+        <div className="not-found">User not found</div>
+        <button className="back-button" onClick={() => navigate(-1)}>
+          Go Back
+        </button>
+      </div>
+    )
 
   return (
-    <Layout>
-      <div className="profile-page-container">
-        <div className="profile-header">
+    <div className="profile-container">
+      <div className="profile-header">
+        <div className="profile-cover">
+          <img src={getImageUrl(user.coverImage) || "/placeholder.svg"} alt="Cover" className="cover-image" />
+        </div>
+        <div className="profile-info">
           <div className="profile-avatar">
-            <img src={profileUser.profileImage || "/default-avatar.png"} alt={`${profileUser.username}'s profile`} />
+            <img src={getImageUrl(user.avatarUrl) || "/placeholder.svg"} alt={user.username} />
           </div>
-          <div className="profile-info">
-            <div className="profile-username">
-              <h1>{profileUser.username}</h1>
-              {currentUser && currentUser.id !== profileUser.id && (
-                <button className={`follow-button ${isFollowing ? "following" : ""}`} onClick={handleFollow}>
-                  {isFollowing ? "Following" : "Follow"}
-                </button>
-              )}
-              {currentUser && currentUser.id === profileUser.id && (
-                <Link to="/profile/edit" className="edit-profile-button">
-                  Edit Profile
-                </Link>
-              )}
-            </div>
+          <div className="profile-details">
+            <h1>{user.name || user.username}</h1>
+            <p className="username">@{user.username}</p>
+            {user.bio && <p className="bio">{user.bio}</p>}
             <div className="profile-stats">
               <div className="stat">
-                <span className="stat-number">{stats.posts}</span> posts
+                <span className="count">{posts.length}</span> Posts
               </div>
-              <div className="stat">
-                <Link to={`/profile/${username}/followers`}>
-                  <span className="stat-number">{stats.followers}</span> followers
-                </Link>
-              </div>
-              <div className="stat">
-                <Link to={`/profile/${username}/following`}>
-                  <span className="stat-number">{stats.following}</span> following
-                </Link>
-              </div>
+              <Link to={`/profile/${username}/followers`} className="stat">
+                <span className="count">{user.followersCount}</span> Followers
+              </Link>
+              <Link to={`/profile/${username}/following`} className="stat">
+                <span className="count">{user.followingCount}</span> Following
+              </Link>
             </div>
-            <div className="profile-bio">
-              <h2>{profileUser.fullName}</h2>
-              <p>{profileUser.bio}</p>
-            </div>
+            <div style={{ marginTop: "20px" }}></div>
+            {currentUser && currentUser.id === user.id ? (
+              <Link to="/profile/edit" className="edit-profile-btn">
+                Edit Profile
+              </Link>
+            ) : (
+              <button
+                onClick={handleFollow}
+                className={`follow-btn ${isFollowing ? "following" : ""} ${followLoading ? "loading" : ""}`}
+                disabled={followLoading}
+              >
+                {followLoading ? "Processing..." : isFollowing ? "Following" : "Follow"}
+              </button>
+            )}
           </div>
         </div>
-
-        <div className="profile-tabs">
-          <button className="tab active">Posts</button>
-          <Link to={`/profile/${username}/learning-plans`}>
-            <button className="tab">Learning Plans</button>
-          </Link>
-        </div>
-
-        <div className="profile-content">
-          {posts.length === 0 ? (
-            <div className="no-posts">
-              {currentUser && currentUser.id === profileUser.id ? (
-                <>
-                  <p>You haven't posted anything yet.</p>
-                  <Link to="/create-post" className="create-post-button">
-                    Create your first post
-                  </Link>
-                </>
-              ) : (
-                <p>{profileUser.username} hasn't posted anything yet.</p>
-              )}
-            </div>
-          ) : (
-            <div className="profile-posts">
-              {posts.map((post) => (
-                <PostItem key={post.id} post={post} />
-              ))}
-            </div>
-          )}
-        </div>
       </div>
-    </Layout>
+
+      <div className="profile-content">
+        <h2>Posts</h2>
+        {posts.length === 0 ? (
+          <p className="no-posts">No posts yet</p>
+        ) : (
+          <div className="posts-grid">
+            {posts.map((post) => (
+              <PostItem key={post.id} post={post} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

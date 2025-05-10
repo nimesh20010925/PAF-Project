@@ -41,6 +41,7 @@ public class Story {
         joinColumns = @JoinColumn(name = "story_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @Builder.Default
     private Set<User> viewers = new HashSet<>();
 
     @Column(name = "created_at")
@@ -54,6 +55,11 @@ public class Story {
         createdAt = LocalDateTime.now();
         // Stories expire after 24 hours
         expiresAt = createdAt.plusHours(24);
+        
+        // Ensure viewers is initialized
+        if (viewers == null) {
+            viewers = new HashSet<>();
+        }
     }
 
     public boolean isExpired() {

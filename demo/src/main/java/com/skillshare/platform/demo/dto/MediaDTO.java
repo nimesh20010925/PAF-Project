@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 import com.skillshare.platform.demo.model.Media;
 import com.skillshare.platform.demo.model.MediaType;
 
@@ -18,14 +16,22 @@ public class MediaDTO {
     private Long id;
     private String url;
     private MediaType type;
-    private LocalDateTime createdAt;
 
     public static MediaDTO fromMedia(Media media) {
+        if (media == null) {
+            return null;
+        }
+        
+        // Ensure the URL is properly formatted
+        String mediaUrl = media.getUrl();
+        
+        // If URL doesn't start with http or https, assume it's a relative path
+        // and keep it as is - the frontend will handle prepending the base URL
+        
         return MediaDTO.builder()
                 .id(media.getId())
-                .url(media.getUrl())
+                .url(mediaUrl)
                 .type(media.getType())
-                .createdAt(media.getCreatedAt())
                 .build();
     }
 }

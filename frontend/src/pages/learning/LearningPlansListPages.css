@@ -1,0 +1,140 @@
+.learning-plans-list-container {
+    padding: 2rem;
+    font-family: Arial, sans-serif;
+  }
+  
+  .learning-plans-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .create-plan-button {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+  }
+  
+  .create-plan-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .learning-plans-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .learning-plan-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  .learning-plan-card h2 {
+    margin-top: 0;
+  }
+  
+  .learning-plan-card p {
+    color: #555;
+  }
+  
+  .learning-plan-card span {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.25rem;
+  }
+  
+  .view-plan-button,
+  .edit-plan-button {
+    margin-right: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+  }
+  
+  .view-plan-button {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .view-plan-button:hover {
+    background-color: #1e7e34;
+  }
+  
+  .edit-plan-button {
+    background-color: #ffc107;
+    color: black;
+  }
+  
+  .edit-plan-button:hover {
+    background-color: #e0a800;
+  }
+  
+  .error-container {
+    color: red;
+    background-color: #ffe5e5;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+  }
+  
+  .retry-button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .retry-button:hover {
+    background-color: #c82333;
+  }
+  
+  .no-plans-message {
+    text-align: center;
+    margin-top: 3rem;
+  }
+  
+  .pagination-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  .pagination-controls button {
+    padding: 0.5rem 1rem;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .pagination-controls button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .debug-info {
+    background-color: #f0f0f0;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-left: 4px solid #007bff;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  

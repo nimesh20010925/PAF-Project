@@ -1,25 +1,37 @@
 package com.skillshare.platform.demo.controller;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.skillshare.platform.demo.dto.StoryDTO;
 import com.skillshare.platform.demo.dto.request.StoryRequest;
 import com.skillshare.platform.demo.dto.response.ApiResponse;
 import com.skillshare.platform.demo.security.CurrentUser;
 import com.skillshare.platform.demo.service.StoryService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/stories")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Add this for development to avoid CORS issues
 public class StoryController {
 
     private final StoryService storyService;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<StoryDTO>>> getAllStories(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @CurrentUser Long currentUserId) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<StoryDTO> stories = storyService.getAllStories(pageable, currentUserId);
+        return ResponseEntity.ok(ApiResponse.success(stories));
+    }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<ApiResponse<List<StoryDTO>>> getUserStories(
@@ -40,40 +52,18 @@ public class StoryController {
             @RequestPart("story") StoryRequest storyRequest,
             @RequestPart("media") MultipartFile mediaFile,
             @CurrentUser Long currentUserId) {
-        
-        // Log the received data
-        System.out.println("Received story request: " + storyRequest);
-        System.out.println("Received media file: " + (mediaFile != null ? 
-                            mediaFile.getOriginalFilename() + ", " + 
-                            mediaFile.getContentType() + ", " + 
-                            mediaFile.getSize() + " bytes" : "null"));
-        
         StoryDTO createdStory = storyService.createStory(storyRequest, mediaFile, currentUserId);
         return ResponseEntity.ok(ApiResponse.success("Story created successfully", createdStory));
     }
-    
-    // Add a simpler endpoint for story creation
+
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse<StoryDTO>> uploadStory(
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "content", required = false) String content,
-            @RequestParam("media") MultipartFile media,
+            @RequestParam("media") MultipartFile mediaFile,
             @CurrentUser Long currentUserId) {
-        
-        System.out.println("Received story upload with title: " + title);
-        System.out.println("Received story upload with content: " + content);
-        System.out.println("Received media file: " + (media != null ? 
-                            media.getOriginalFilename() + ", " + 
-                            media.getContentType() + ", " + 
-                            media.getSize() + " bytes" : "null"));
-        
-        // Create a StoryRequest object
-        StoryRequest storyRequest = new StoryRequest();
-        storyRequest.setTitle(title);
-        storyRequest.setContent(content);
-        
-        // Use the existing service method
-        StoryDTO createdStory = storyService.createStory(storyRequest, media, currentUserId);
+        StoryRequest storyRequest = StoryRequest.builder().content(content).build();
+        StoryDTO createdStory = storyService.createStory(storyRequest, mediaFile, currentUserId);
         return ResponseEntity.ok(ApiResponse.success("Story created successfully", createdStory));
     }
 

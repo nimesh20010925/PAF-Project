@@ -7,6 +7,14 @@ import { useAuth } from "../../contexts/AuthContext"
 import { useToast } from "../../contexts/ToastContext"
 import "./CreatePostPage.css"
 
+const mediaLimitsStyle = {
+  display: "flex",
+  flexDirection: "column",
+  marginBottom: "8px",
+  color: "#666",
+  fontSize: "0.85rem",
+}
+
 const CreatePostPage = () => {
   console.log("Rendering CreatePostPage")
   const { currentUser } = useAuth()
@@ -16,11 +24,11 @@ const CreatePostPage = () => {
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    postType: "SKILL", // Changed default to match backend enum
-    media: null,
+    postType: "SKILL",
+    media: [], // Changed from null to empty array
   })
 
-  const [mediaPreview, setMediaPreview] = useState("")
+  const [mediaPreviews, setMediaPreviews] = useState([]) // Changed from single preview to array
   const [loading, setLoading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState(null)
 
@@ -30,20 +38,78 @@ const CreatePostPage = () => {
   }
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      // Log file details for debugging
-      console.log("Selected file:", file.name, file.type, file.size)
+    const files = Array.from(e.target.files)
 
-      setFormData((prev) => ({ ...prev, media: file }))
-      setUploadStatus(`File selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`)
+    if (files.length > 3) {
+      showToast("Maximum 3 files allowed per post", "error")
+      setUploadStatus("Error: Maximum 3 files allowed per post")
+      return
+    }
 
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setMediaPreview(reader.result)
-        console.log("Preview generated")
+    // Check if any file is a video
+    const videoFile = files.find((file) => file.type.startsWith("video/"))
+
+    if (videoFile) {
+      // Create a temporary URL for the video
+      const videoUrl = URL.createObjectURL(videoFile)
+      const video = document.createElement("video")
+
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(videoUrl)
+
+        // Check if video is longer than 30 seconds
+        if (video.duration > 30) {
+          showToast("Videos must be 30 seconds or less", "error")
+          setUploadStatus("Error: Videos must be 30 seconds or less")
+          return
+        }
+
+        // If video is valid, proceed with the upload
+        processValidFiles(files)
       }
-      reader.readAsDataURL(file)
+
+      video.onerror = () => {
+        URL.revokeObjectURL(videoUrl)
+        showToast("Error validating video file", "error")
+        setUploadStatus("Error validating video file")
+      }
+
+      video.src = videoUrl
+    } else {
+      // If no video files, proceed with the upload
+      processValidFiles(files)
+    }
+  }
+
+  const processValidFiles = (files) => {
+    if (files.length > 0) {
+      // Log file details for debugging
+      files.forEach((file) => {
+        console.log("Selected file:", file.name, file.type, file.size)
+      })
+
+      setFormData((prev) => ({ ...prev, media: files }))
+      setUploadStatus(`${files.length} file(s) selected`)
+
+      // Generate previews for all files
+      const previews = []
+
+      files.forEach((file) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          previews.push({
+            id: Math.random().toString(36).substr(2, 9),
+            type: file.type,
+            url: reader.result,
+          })
+
+          if (previews.length === files.length) {
+            setMediaPreviews(previews)
+            console.log("Previews generated")
+          }
+        }
+        reader.readAsDataURL(file)
+      })
     }
   }
 
@@ -72,11 +138,11 @@ const CreatePostPage = () => {
 
       // If using the createPost API function that expects separate arguments
       let response
-      if (formData.media) {
+      if (formData.media.length > 0) {
         // If there's media, pass it as the second argument
-        setUploadStatus("Uploading media file...")
-        console.log("Uploading with media:", formData.media.name, formData.media.type)
-        response = await postAPI.createPost(postData, [formData.media])
+        setUploadStatus("Uploading media files...")
+        console.log(`Uploading ${formData.media.length} files`)
+        response = await postAPI.createPost(postData, formData.media)
       } else {
         // If no media, pass an empty array
         response = await postAPI.createPost(postData, [])
@@ -155,7 +221,11 @@ const CreatePostPage = () => {
 
         <div className="form-group">
           <label htmlFor="media">Add Media (Optional)</label>
-          <input type="file" id="media" name="media" onChange={handleFileChange} accept="image/*,video/*" />
+          <div style={mediaLimitsStyle}>
+            <small>• Maximum 3 files per post</small>
+            <small>• Videos must be 30 seconds or less</small>
+          </div>
+          <input type="file" id="media" name="media" onChange={handleFileChange} accept="image/*,video/*" multiple />
 
           {uploadStatus && (
             <div
@@ -172,13 +242,17 @@ const CreatePostPage = () => {
             </div>
           )}
 
-          {mediaPreview && (
-            <div className="media-preview">
-              {formData.media.type.startsWith("image/") ? (
-                <img src={mediaPreview || "/placeholder.svg"} alt="Preview" />
-              ) : formData.media.type.startsWith("video/") ? (
-                <video controls src={mediaPreview} />
-              ) : null}
+          {mediaPreviews.length > 0 && (
+            <div className="media-previews">
+              {mediaPreviews.map((preview) => (
+                <div key={preview.id} className="media-preview">
+                  {preview.type.startsWith("image/") ? (
+                    <img src={preview.url || "/placeholder.svg"} alt="Preview" />
+                  ) : preview.type.startsWith("video/") ? (
+                    <video controls src={preview.url} />
+                  ) : null}
+                </div>
+              ))}
             </div>
           )}
         </div>
